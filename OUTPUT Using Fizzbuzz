@@ -1,0 +1,80 @@
+-- we all know fizzbuzz
+DECLARE @i INT = 1
+DECLARE @z INT = 101
+DECLARE @output varchar(8) = ''
+
+WHILE @i < @z 
+BEGIN
+SET @output = ''
+IF @i %3 = 0 SET @output = 'Fizz'
+IF @i %5 = 0 SET @output = @output +'Buzz'
+IF @output = '' SET @output	= @i
+SET @i= @i +1
+
+PRINT @output
+END
+
+--Now we want to keep track of what gets inserted into it we can use OUTPUT
+DECLARE @i INT = 1
+DECLARE @z INT = 101
+DECLARE @output varchar(8) = ''
+DECLARE @outputtable TABLE (outputvalue varchar(8))
+DECLARE @fizzbuzztable TABLE (fizzbuzzvalue varchar(8))
+
+WHILE @i < @z 
+BEGIN
+SET @output = ''
+IF @i %3 = 0 SET @output = 'Fizz'
+IF @i %5 = 0 SET @output = @output +'Buzz'
+IF @output = '' SET @output	= @i
+SET @i= @i +1
+
+INSERT INTO @fizzbuzztable (fizzbuzzvalue)
+OUTPUT inserted.fizzbuzzvalue INTO @outputtable
+VALUES(@output)
+ 
+END
+
+
+SELECT * FROM @outputtable o	  
+SELECT * FROM @fizzbuzztable
+
+-- we get two tables one for the original fizzbuzz and the other for the inserted values
+
+-- now lets delete some rows and keep track of them also
+DECLARE @i INT = 1
+DECLARE @z INT = 101
+DECLARE @output varchar(8) = ''
+DECLARE @outputtable TABLE (outputvalue varchar(8))
+DECLARE @fizzbuzztable TABLE (fizzbuzzvalue varchar(8))
+DECLARE @deletedtable TABLE (deletedvalues varchar(8))
+
+WHILE @i < @z 
+BEGIN
+SET @output = ''
+IF @i %3 = 0 SET @output = 'Fizz'
+IF @i %5 = 0 SET @output = @output +'Buzz'
+IF @output = '' SET @output	= @i
+SET @i= @i +1
+
+INSERT INTO @fizzbuzztable (fizzbuzzvalue)
+OUTPUT inserted.fizzbuzzvalue INTO @outputtable
+VALUES(@output)
+END
+
+
+-- the deleted is tricky because of where you have to insert it between the FROM and WHERE
+DELETE FROM @fizzbuzztable  
+OUTPUT DELETED.fizzbuzzvalue INTO @deletedtable 
+WHERE [@fizzbuzztable].fizzbuzzvalue	 = 'fizz'
+
+
+
+SELECT * FROM @outputtable o	  
+SELECT * FROM @fizzbuzztable f
+SELECT COUNT(*) AS numberofdeletedrows FROM @deletedtable d
+
+
+
+
+
